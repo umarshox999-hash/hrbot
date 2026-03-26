@@ -12,7 +12,7 @@ bot.onText(/\/start/, (msg) => {
           {
             text: "📝 Anketa to‘ldirish",
             web_app: {
-              url: " https://arytenoepiglottic-tony-ambivalently.ngrok-free.dev"
+              url: "https://hrbot-nndo.onrender.com"
             }
           }
         ],
@@ -20,7 +20,7 @@ bot.onText(/\/start/, (msg) => {
           {
             text: "📊 Admin panel",
             web_app: {
-              url: "https://arytenoepiglottic-tony-ambivalently.ngrok-free.dev/admin"
+              url: "https://hrbot-nndo.onrender.com/admin"
             }
           }
         ]
