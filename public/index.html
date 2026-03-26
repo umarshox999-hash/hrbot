@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HR Anketa</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+body{
+  margin:0;
+  font-family:'Inter',sans-serif;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:100vh;
+  background:#0f172a;
+}
+
+.card{
+  background:#fff;
+  padding:25px;
+  border-radius:15px;
+  width:90%;
+  max-width:420px;
+  text-align:center;
+}
+
+.question{
+  font-size:18px;
+  font-weight:600;
+  margin-bottom:15px;
+}
+
+input, select{
+  width:100%;
+  padding:10px;
+  margin-bottom:15px;
+  border-radius:8px;
+  border:1px solid #ccc;
+}
+
+.buttons{
+  display:flex;
+  justify-content:space-between;
+}
+
+button{
+  width:48%;
+  padding:10px;
+  border:none;
+  border-radius:8px;
+  background:#4f46e5;
+  color:#fff;
+  cursor:pointer;
+}
+
+.success{
+  display:none;
+  color:green;
+  margin-top:10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+  <div class="question" id="question"></div>
+
+  <input id="textInput" type="text">
+  <select id="selectInput" style="display:none;"></select>
+
+  <div class="buttons">
+    <button onclick="prev()">Ortga</button>
+    <button onclick="next()">Keyingi</button>
+  </div>
+
+  <div class="success" id="success">✅ Ariza yuborildi</div>
+
+</div>
+
+<script>
+
+const questions = [
+  {q:"Ismingiz va familiyangiz?", type:"text"},
+  {q:"Tug'ilgan sana?", type:"text"},
+  {q:"Telefon raqamingiz?", type:"text"},
+  {q:"Yashash manzilingiz?", type:"text"},
+  {q:"Oilaviy holatingiz?", type:"select", options:["Yolg'iz","Oilali","Boshqa"]},
+  {q:"Ish tajribangiz?", type:"text"},
+  {q:"Oxirgi ishlagan joyingiz?", type:"text"},
+  {q:"Ma’lumotingiz?", type:"select", options:["O‘rta","Oliy","Magistr"]},
+  {q:"Kutilayotgan oylik (so‘m)?", type:"text"}
+];
+
+let index = 0;
+let answers = {};
+
+const questionEl = document.getElementById("question");
+const textInput = document.getElementById("textInput");
+const selectInput = document.getElementById("selectInput");
+const success = document.getElementById("success");
+
+function show(){
+  const q = questions[index];
+
+  questionEl.innerText = q.q;
+
+  textInput.style.display = "none";
+  selectInput.style.display = "none";
+
+  if(q.type === "text"){
+    textInput.style.display = "block";
+    textInput.value = answers[q.q] || "";
+  }
+
+  if(q.type === "select"){
+    selectInput.style.display = "block";
+    selectInput.innerHTML = "";
+
+    q.options.forEach(o=>{
+      const opt = document.createElement("option");
+      opt.value = o;
+      opt.innerText = o;
+      selectInput.appendChild(opt);
+    });
+
+    selectInput.value = answers[q.q] || q.options[0];
+  }
+}
+
+function save(){
+  const q = questions[index];
+
+  if(q.type === "text"){
+    answers[q.q] = textInput.value.trim();
+  }
+
+  if(q.type === "select"){
+    answers[q.q] = selectInput.value;
+  }
+}
+
+function next(){
+  save();
+
+  if(index < questions.length - 1){
+    index++;
+    show();
+  }else{
+
+    fetch("/api/save", {
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json"
+      },
+      body: JSON.stringify(answers)
+    })
+    .then(res=>res.json())
+    .then(()=>{
+      success.style.display = "block";
+    })
+    .catch(()=>{
+      alert("Server xatosi ❌");
+    });
+
+  }
+}
+
+function prev(){
+  if(index > 0){
+    save();
+    index--;
+    show();
+  }
+}
+
+show();
+
+</script>
+
+</body>
+</html>
