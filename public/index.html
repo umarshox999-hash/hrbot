@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Anketa</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
@@ -12,8 +11,8 @@
 body {
   margin:0;
   background:#0d1117;
-  color:#e6edf3;
   font-family:'Poppins', sans-serif;
+  color:#e6edf3;
   display:flex;
   justify-content:center;
   align-items:center;
@@ -26,12 +25,12 @@ body {
   background:#161b22;
   padding:25px;
   border-radius:16px;
-  box-shadow:0 0 25px rgba(0,0,0,0.5);
+  box-shadow:0 0 30px rgba(0,0,0,0.6);
 }
 
 h1 {
   text-align:center;
-  font-size:26px;
+  font-size:28px;
   margin-bottom:10px;
 }
 
@@ -44,22 +43,27 @@ h1 {
 
 input, select {
   width:100%;
-  padding:10px;
+  padding:11px;
   margin-bottom:12px;
   border-radius:8px;
   border:none;
   background:#0d1117;
-  color:white;
+  color:#fff;
+  font-size:14px;
+}
+
+input::placeholder {
+  color:#8b949e;
 }
 
 button {
   width:100%;
-  padding:12px;
+  padding:13px;
   background:#238636;
   border:none;
   border-radius:8px;
-  color:white;
   font-size:16px;
+  color:#fff;
   cursor:pointer;
 }
 
@@ -67,11 +71,23 @@ button:hover {
   background:#2ea043;
 }
 
-.success {
-  display:none;
+.msg {
   text-align:center;
   margin-top:15px;
-  color:#3fb950;
+  display:none;
+}
+
+.success { color:#3fb950; }
+.error { color:#f85149; }
+
+.preview {
+  text-align:center;
+  margin-bottom:10px;
+}
+
+.preview img {
+  max-width:120px;
+  border-radius:10px;
 }
 </style>
 </head>
@@ -83,57 +99,81 @@ button:hover {
 <h1>📝 Anketa to‘ldiring</h1>
 <div class="sub">Iltimos oxirigacha to‘ldiring</div>
 
-<form action="/submit" method="POST" enctype="multipart/form-data">
+<form id="form">
 
-<input type="text" name="Ismingiz?" placeholder="Ismingiz" required>
-<input type="text" name="Telefon raqamingiz?" placeholder="Telefon" required>
-<input type="text" name="Telegram username?" placeholder="Telegram username">
+<input type="text" name="name" placeholder="Ismingiz" required>
+<input type="text" name="phone" placeholder="Telefon raqamingiz" required>
+<input type="text" name="username" placeholder="Telegram username">
 
-<input type="text" name="Qaysi ishda ishlamoqchisiz?" placeholder="Qaysi ishda ishlamoqchisiz?" required>
+<input type="text" name="job" placeholder="Qaysi ishda ishlamoqchisiz?" required>
+<input type="text" name="address" placeholder="Yashash manzilingiz" required>
 
-<input type="text" name="Yashash manzilingiz?" placeholder="Yashash manzili" required>
+<input type="number" name="salary" placeholder="Kutilayotgan oylik maosh">
 
-<input type="number" name="Kutilayotgan oylik maosh?" placeholder="Kutilayotgan oylik maosh">
-
-<select name="Oilaviy holatingiz?">
+<select name="family">
   <option value="">Oilaviy holat</option>
   <option value="Bo‘ydoq">Bo‘ydoq</option>
   <option value="Uylangan">Uylangan</option>
 </select>
 
-<select name="Sudlanganmisiz?">
+<select name="criminal">
   <option value="">Sudlanganmisiz?</option>
   <option value="Ha">Ha</option>
   <option value="Yo‘q">Yo‘q</option>
 </select>
 
-<input type="file" name="photo" accept="image/*">
+<div class="preview" id="preview"></div>
+
+<input type="file" name="photo" id="photo" accept="image/*">
 
 <button type="submit">Yuborish</button>
 
 </form>
 
-<div class="success" id="successMsg">
-  ✅ Ma'lumot yuborildi!
-</div>
+<div class="msg success" id="successMsg">✅ Ma'lumot yuborildi!</div>
+<div class="msg error" id="errorMsg">❌ Xatolik yuz berdi</div>
 
 </div>
 
 <script>
-const form = document.querySelector("form");
+const form = document.getElementById("form");
 const success = document.getElementById("successMsg");
+const error = document.getElementById("errorMsg");
+const photoInput = document.getElementById("photo");
+const preview = document.getElementById("preview");
 
-  <form action="/submit" method="POST" enctype="multipart/form-data">
+// 📷 preview
+photoInput.addEventListener("change", () => {
+  const file = photoInput.files[0];
+  if (file) {
+    preview.innerHTML = `<img src="${URL.createObjectURL(file)}">`;
+  }
+});
+
+// 🚀 submit
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  success.style.display = "none";
+  error.style.display = "none";
+
   const formData = new FormData(form);
 
-  const res = await fetch("/submit", {
-    method: "POST",
-    body: formData
-  });
+  try {
+    const res = await fetch("/submit", {
+      method: "POST",
+      body: formData
+    });
 
-  if(res.ok){
-    form.reset();
-    success.style.display = "block";
+    if (res.ok) {
+      success.style.display = "block";
+      form.reset();
+      preview.innerHTML = "";
+    } else {
+      error.style.display = "block";
+    }
+  } catch (err) {
+    error.style.display = "block";
   }
 });
 </script>
