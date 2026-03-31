@@ -44,7 +44,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // 📂 DATA FILE
-const DATA_FILE = "data.json";
+const DATA_FILE = path.join(__dirname, "data.json");
 if (!fs.existsSync(DATA_FILE)) {
   fs.writeFileSync(DATA_FILE, "[]");
 }
@@ -94,13 +94,11 @@ app.post("/submit", upload.single("photo"), (req, res) => {
     fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
 
     res.send({ success: true });
-
   } catch (err) {
     console.error(err);
     res.status(500).send("Xatolik");
   }
 });
-
 // 📊 ADMIN DATA
 app.get("/data", (req, res) => {
   try {
