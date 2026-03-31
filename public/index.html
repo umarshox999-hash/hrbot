@@ -123,9 +123,7 @@ button:hover {
 const form = document.querySelector("form");
 const success = document.getElementById("successMsg");
 
-form.addEventListener("submit", async (e) => {
-  e.preventDefault();
-
+  <form action="/submit" method="POST" enctype="multipart/form-data">
   const formData = new FormData(form);
 
   const res = await fetch("/submit", {
