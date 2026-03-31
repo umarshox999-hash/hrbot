@@ -3,183 +3,223 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HR Anketa</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<title>Anketa</title>
+
+<!-- Fontlar -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&family=Pacifico&display=swap" rel="stylesheet">
 
 <style>
-body{
+body {
   margin:0;
-  font-family:'Inter',sans-serif;
+  background:#0d1117;
+  color:#e6edf3;
+  font-family:'Poppins', sans-serif;
   display:flex;
   justify-content:center;
   align-items:center;
-  min-height:100vh;
-  background:#0f172a;
+  height:100vh;
 }
 
-.card{
-  background:#fff;
-  padding:25px;
-  border-radius:15px;
-  width:90%;
-  max-width:420px;
+/* Container */
+.container {
   text-align:center;
+  width:100%;
+  max-width:420px;
 }
 
-.question{
-  font-size:18px;
+/* Header */
+.header h1 {
+  font-family:'Pacifico', cursive;
+  font-size:28px;
+  margin-bottom:5px;
+}
+
+.header small {
+  color:#8b949e;
+  font-size:12px;
+}
+
+/* Sticker */
+.sticker {
+  font-size:40px;
+  margin:10px 0;
+}
+
+/* Card */
+.card {
+  background:#161b22;
+  padding:20px;
+  border-radius:15px;
+}
+
+/* Question */
+#question {
+  text-align:center;
   font-weight:600;
   margin-bottom:15px;
 }
 
-input, select{
+/* Inputs */
+input, select {
   width:100%;
   padding:10px;
-  margin-bottom:15px;
+  margin:10px 0;
+  background:#0d1117;
+  border:1px solid #30363d;
+  color:white;
   border-radius:8px;
-  border:1px solid #ccc;
+  text-align:center;
 }
 
-.buttons{
+/* Buttons */
+.buttons {
   display:flex;
   justify-content:space-between;
 }
 
-button{
+button {
   width:48%;
   padding:10px;
+  background:#238636;
   border:none;
+  color:white;
   border-radius:8px;
-  background:#4f46e5;
-  color:#fff;
   cursor:pointer;
 }
 
-.success{
-  display:none;
-  color:green;
-  margin-top:10px;
+button:hover {
+  background:#2ea043;
 }
 </style>
 </head>
 
 <body>
 
-<div class="card">
+<div class="container">
 
-  <div class="question" id="question"></div>
-
-  <input id="textInput" type="text">
-  <select id="selectInput" style="display:none;"></select>
-
-  <div class="buttons">
-    <button onclick="prev()">Ortga</button>
-    <button onclick="next()">Keyingi</button>
+  <!-- HEADER -->
+  <div class="header">
+    <h1>Anketa to‘ldiring</h1>
+    <div class="sticker">📋✨</div>
+    <small>Iltimos oxirigacha to‘ldiring</small>
   </div>
 
-  <div class="success" id="success">✅ Ariza yuborildi</div>
+  <!-- CARD -->
+  <div class="card">
+
+    <div id="question"></div>
+
+    <input type="text" id="input">
+    <select id="select" style="display:none;"></select>
+    <input type="file" id="photo" style="display:none;">
+
+    <div class="buttons">
+      <button onclick="prev()">Ortga</button>
+      <button onclick="next()">Keyingi</button>
+    </div>
+
+  </div>
 
 </div>
 
 <script>
-
 const questions = [
-  {q:"Ismingiz va familiyangiz?", type:"text"},
-  {q:"Tug'ilgan sana?", type:"text"},
-  {q:"Telefon raqamingiz?", type:"text"},
-  {q:"Yashash manzilingiz?", type:"text"},
-  {q:"Oilaviy holatingiz?", type:"select", options:["Yolg'iz","Oilali","Boshqa"]},
-  {q:"Ish tajribangiz?", type:"text"},
-  {q:"Oxirgi ishlagan joyingiz?", type:"text"},
-  {q:"Ma’lumotingiz?", type:"select", options:["O‘rta","Oliy","Magistr"]},
-  {q:"Kutilayotgan oylik (so‘m)?", type:"text"}
+  {q:"Ismingiz?"},
+  {q:"Telefon raqamingiz?"},
+  {q:"Telegram username?"},
+  {q:"Qaysi ishda ishlamoqchisiz?"},
+  {q:"Yashash manzilingiz?"},
+  {q:"Kutilayotgan oylik maosh?"},
+  {q:"Oilaviy holatingiz?", type:"select", options:["Bo‘ydoq","Uylangan/Turmush qurgan"]},
+  {q:"Sudlanganmisiz?", type:"select", options:["Ha","Yo‘q"]},
+  {q:"Rasmingizni yuklang", type:"file"}
 ];
 
-let index = 0;
+let i = 0;
 let answers = {};
 
-const questionEl = document.getElementById("question");
-const textInput = document.getElementById("textInput");
-const selectInput = document.getElementById("selectInput");
-const success = document.getElementById("success");
-
 function show(){
-  const q = questions[index];
+  let q = questions[i];
+  document.getElementById("question").innerText = q.q;
 
-  questionEl.innerText = q.q;
+  document.getElementById("input").style.display="none";
+  document.getElementById("select").style.display="none";
+  document.getElementById("photo").style.display="none";
 
-  textInput.style.display = "none";
-  selectInput.style.display = "none";
-
-  if(q.type === "text"){
-    textInput.style.display = "block";
-    textInput.value = answers[q.q] || "";
+  if(!q.type){
+    let input = document.getElementById("input");
+    input.style.display="block";
+    input.value = answers[q.q] || "";
   }
 
-  if(q.type === "select"){
-    selectInput.style.display = "block";
-    selectInput.innerHTML = "";
+  if(q.type==="select"){
+    let select = document.getElementById("select");
+    select.style.display="block";
+    select.innerHTML="";
 
     q.options.forEach(o=>{
-      const opt = document.createElement("option");
-      opt.value = o;
-      opt.innerText = o;
-      selectInput.appendChild(opt);
+      let opt=document.createElement("option");
+      opt.value=o;
+      opt.innerText=o;
+      select.appendChild(opt);
     });
 
-    selectInput.value = answers[q.q] || q.options[0];
-  }
-}
-
-function save(){
-  const q = questions[index];
-
-  if(q.type === "text"){
-    answers[q.q] = textInput.value.trim();
+    select.value = answers[q.q] || "";
   }
 
-  if(q.type === "select"){
-    answers[q.q] = selectInput.value;
+  if(q.type==="file"){
+    document.getElementById("photo").style.display="block";
   }
 }
 
 function next(){
   save();
 
-  if(index < questions.length - 1){
-    index++;
+  if(i < questions.length-1){
+    i++;
     show();
-  }else{
-
-    fetch("/api/save", {
-      method:"POST",
-      headers:{
-        "Content-Type":"application/json"
-      },
-      body: JSON.stringify(answers)
-    })
-    .then(res=>res.json())
-    .then(()=>{
-      success.style.display = "block";
-    })
-    .catch(()=>{
-      alert("Server xatosi ❌");
-    });
-
+  } else {
+    sendData();
   }
 }
 
 function prev(){
-  if(index > 0){
-    save();
-    index--;
+  if(i>0){
+    i--;
     show();
   }
 }
 
-show();
+function save(){
+  let q = questions[i];
 
+  if(q.type==="file"){
+    answers.photo = document.getElementById("photo").files[0];
+  } 
+  else if(q.type==="select"){
+    answers[q.q] = document.getElementById("select").value;
+  }
+  else {
+    answers[q.q] = document.getElementById("input").value;
+  }
+}
+
+function sendData(){
+  const formData = new FormData();
+
+  for(let key in answers){
+    formData.append(key, answers[key]);
+  }
+
+  fetch("/submit", {
+    method:"POST",
+    body:formData
+  })
+  .then(()=>alert("Yuborildi ✅"));
+}
+
+show();
 </script>
 
 </body>
