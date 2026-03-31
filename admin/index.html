@@ -3,102 +3,173 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Admin Panel</title>
 
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+
 <style>
-body{
+body {
   margin:0;
-  font-family:Arial;
-  background:#111;
-  padding:20px;
-  color:white;
+  background:#0d1117;
+  color:#e6edf3;
+  font-family:'Poppins', sans-serif;
 }
 
-h2{
+/* HEADER */
+.header {
   text-align:center;
+  padding:20px;
+  font-size:22px;
+  font-weight:700;
+  border-bottom:1px solid #30363d;
 }
 
-.container{
-  display:flex;
-  flex-wrap:wrap;
-  gap:15px;
-  justify-content:center;
+/* GRID */
+.container {
+  display:grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap:20px;
+  padding:20px;
 }
 
-.card{
-  background:#fff;
-  color:#000;
+/* CARD */
+.card {
+  background:#161b22;
+  border-radius:16px;
+  overflow:hidden;
+  transition:0.3s;
+  box-shadow:0 0 20px rgba(0,0,0,0.4);
+}
+
+.card:hover {
+  transform:translateY(-5px);
+}
+
+/* IMAGE */
+.card img {
+  width:100%;
+  height:220px;
+  object-fit:cover;
+}
+
+/* CONTENT */
+.content {
   padding:15px;
-  border-radius:10px;
-  width:300px;
 }
 
-.item{
-  margin:5px 0;
+/* TIME */
+.time {
+  font-size:12px;
+  color:#8b949e;
+  margin-bottom:10px;
+}
+
+/* ROW */
+.row {
+  margin-bottom:6px;
   font-size:14px;
 }
 
-.date{
+/* LABEL */
+.label {
+  color:#58a6ff;
+  font-weight:600;
+}
+
+/* BADGES */
+.badge {
+  padding:3px 8px;
+  border-radius:6px;
   font-size:12px;
-  color:gray;
-  margin-bottom:10px;
+  margin-left:5px;
+}
+
+.yes {
+  background:#238636;
+}
+
+.no {
+  background:#da3633;
+}
+
+/* EMPTY */
+.empty {
+  text-align:center;
+  margin-top:50px;
+  color:#8b949e;
+}
+
+/* MOBILE */
+@media(max-width:500px){
+  .header {
+    font-size:18px;
+  }
 }
 </style>
 </head>
 
 <body>
 
-<h2>📊 Admin Panel</h2>
+<div class="header">📋 Arizalar ro‘yxati</div>
 
-<div class="container" id="container">
-  <p>Yuklanmoqda...</p>
+<div class="container" id="list"></div>
+
+<div class="empty" id="empty" style="display:none;">
+  Hozircha arizalar yo‘q
 </div>
 
 <script>
+fetch('/data')
+.then(res => res.json())
+.then(data => {
 
-const container = document.getElementById("container");
+  const list = document.getElementById("list");
+  const empty = document.getElementById("empty");
 
-// DATA YUKLASH
-fetch("/api/data")
-  .then(res => {
-    if(!res.ok){
-      throw new Error("Server javob bermadi");
-    }
-    return res.json();
-  })
-  .then(data => {
+  if(data.length === 0){
+    empty.style.display = "block";
+    return;
+  }
 
-    container.innerHTML = "";
+  data.reverse().forEach(u => {
 
-    if(data.length === 0){
-      container.innerHTML = "<p>Hozircha ma'lumot yo‘q</p>";
-      return;
-    }
+    const sudlanganBadge = u["Sudlanganmisiz?"] === "Ha"
+      ? '<span class="badge yes">Ha</span>'
+      : '<span class="badge no">Yo‘q</span>';
 
-    data.forEach(user => {
+    list.innerHTML += `
+      <div class="card">
 
-      const card = document.createElement("div");
-      card.className = "card";
+        ${u.photo ? `<img src="/uploads/${u.photo}">` : ""}
 
-      let html = `<div class="date">🕒 ${user.createdAt || ""}</div>`;
+        <div class="content">
 
-      for(let key in user){
-        if(key !== "id" && key !== "createdAt"){
-          html += `<div class="item"><b>${key}:</b> ${user[key]}</div>`;
-        }
-      }
+          <div class="time">🕒 ${u.date || "Noma'lum vaqt"}</div>
 
-      card.innerHTML = html;
-      container.appendChild(card);
+          <div class="row"><span class="label">Ism:</span> ${u["Ismingiz?"] || "-"}</div>
+          <div class="row"><span class="label">Telefon:</span> ${u["Telefon raqamingiz?"] || "-"}</div>
+          <div class="row"><span class="label">Telegram:</span> ${u["Telegram username?"] || "-"}</div>
+          <div class="row"><span class="label">Ish:</span> ${u["Qaysi ishda ishlamoqchisiz?"] || "-"}</div>
+          <div class="row"><span class="label">Manzil:</span> ${u["Yashash manzilingiz?"] || "-"}</div>
+          <div class="row"><span class="label">Oylik:</span> ${u["Kutilayotgan oylik maosh?"] || "-"}</div>
+          <div class="row"><span class="label">Oilaviy:</span> ${u["Oilaviy holatingiz?"] || "-"}</div>
 
-    });
+          <div class="row">
+            <span class="label">Sudlangan:</span>
+            ${sudlanganBadge}
+          </div>
 
-  })
-  .catch(err => {
-    console.error(err);
-    container.innerHTML = "<p style='color:red'>❌ Server bilan bog‘lanmadi</p>";
+        </div>
+
+      </div>
+    `;
   });
 
+})
+.catch(() => {
+  document.getElementById("empty").style.display = "block";
+});
 </script>
 
 </body>
