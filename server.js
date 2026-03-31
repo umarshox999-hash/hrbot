@@ -1,75 +1,115 @@
 const express = require("express");
 const fs = require("fs");
+const path = require("path");
+const multer = require("multer");
+const TelegramBot = require("node-telegram-bot-api");
 
 const app = express();
-const PORT = 3000;
-const FILE = "data.json";
+const PORT = process.env.PORT || 3000;
 
-// JSON o‘qish
-app.use(express.json());
+// 🔐 TOKEN
+const TOKEN = "8756429163:AAGqydBAD6oxOVzZhKZbPfHXPs9idBrV1UY";
 
-// papkalarni ulash
-app.use(express.static("public"));       // index.html
-app.use("/admin", express.static("admin")); // admin panel
+// 🌐 SAYT LINK
+const WEB_URL = "https://hrbot-bot.onrender.com";
 
-// data.json bo‘lmasa yaratadi
-if (!fs.existsSync(FILE)) {
-  fs.writeFileSync(FILE, "[]");
+// 🤖 BOT
+const bot = new TelegramBot(TOKEN, { polling: true });
+
+// 📁 PAPKALAR
+const uploadPath = path.join(__dirname, "uploads");
+if (!fs.existsSync(uploadPath)) {
+  fs.mkdirSync(uploadPath);
 }
 
-// ma'lumot o‘qish
-function readData() {
-  return JSON.parse(fs.readFileSync(FILE));
-}
-
-// ma'lumot yozish
-function writeData(data) {
-  fs.writeFileSync(FILE, JSON.stringify(data, null, 2));
-}
-
-// 📥 FORM DATA SAQLASH
-app.post("/api/save", (req, res) => {
-  const body = req.body;
-
-  // bo‘sh kelmasin
-  if (!body || Object.keys(body).length === 0) {
-    return res.status(400).json({ error: "Bo‘sh ma’lumot" });
+// 📦 MULTER (rasm yuklash)
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadPath);
+  },
+  filename: (req, file, cb) => {
+    const uniqueName = Date.now() + "-" + file.originalname;
+    cb(null, uniqueName);
   }
+});
+const upload = multer({ storage });
 
-  const data = readData();
+// 📁 STATIC
+app.use(express.static("public"));
+app.use("/admin", express.static("admin"));
+app.use("/uploads", express.static("uploads"));
 
-  const newUser = {
-    id: Date.now(),
-    createdAt: new Date().toLocaleString(),
-    ...body
-  };
+// 📄 JSON parser
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-  data.push(newUser);
-  writeData(data);
+// 📂 DATA FILE
+const DATA_FILE = "data.json";
+if (!fs.existsSync(DATA_FILE)) {
+  fs.writeFileSync(DATA_FILE, "[]");
+}
 
-  res.json({ success: true });
+// 🤖 TELEGRAM START
+bot.onText(/\/start/, (msg) => {
+  bot.sendMessage(msg.chat.id, "Anketani to‘ldiring 👇", {
+    reply_markup: {
+      keyboard: [
+        [
+          {
+            text: "📝 Anketa to‘ldirish",
+            web_app: { url: WEB_URL }
+          }
+        ]
+      ],
+      resize_keyboard: true
+    }
+  });
 });
 
-// 📤 ADMIN UCHUN DATA
-app.get("/api/data", (req, res) => {
-  const data = readData();
-  res.json(data.reverse());
+// 📥 FORM QABUL QILISH
+app.post("/submit", upload.single("photo"), (req, res) => {
+  try {
+    let data = JSON.parse(fs.readFileSync(DATA_FILE));
+
+    const newUser = {
+      ...req.body,
+      photo: req.file ? req.file.filename : null,
+      date: new Date().toLocaleString()
+    };
+
+    data.push(newUser);
+
+    fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
+
+    res.send({ success: true });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Xatolik");
+  }
 });
 
-// 🗑 O‘CHIRISH
-app.delete("/api/delete/:id", (req, res) => {
-  let data = readData();
+// 📊 ADMIN DATA
+app.get("/data", (req, res) => {
+  try {
+    const data = JSON.parse(fs.readFileSync(DATA_FILE));
+    res.json(data);
+  } catch (err) {
+    res.json([]);
+  }
+});
 
-  data = data.filter(item => item.id != req.params.id);
-
-  writeData(data);
-
-  res.json({ success: true });
+// 🌍 ROOT TEST
+app.get("/", (req, res) => {
+  res.send("🚀 Server ishlayapti");
 });
 
 // 🚀 SERVER START
 app.listen(PORT, () => {
-  console.log("🔥 Server ishlayapti!");
-  console.log("👉 Form:  http://localhost:3000");
-  console.log("👉 Admin: http://localhost:3000/admin");
+  console.log(`✅ Server ishlayapti: ${PORT}`);
+});
+
+// ❌ BOT ERROR
+bot.on("polling_error", (err) => {
+  console.log("❌ Bot error:", err.message);
 });
