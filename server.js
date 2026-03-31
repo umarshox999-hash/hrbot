@@ -81,7 +81,15 @@ bot.onText(/\/start/, (msg) => {
 // 📥 FORM QABUL QILISH
 app.post("/submit", upload.single("photo"), (req, res) => {
   try {
-    let data = JSON.parse(fs.readFileSync(DATA_FILE));
+    console.log("BODY:", req.body);
+    console.log("FILE:", req.file);
+
+    const DATA_FILE = path.join(__dirname, "data.json");
+
+    let data = [];
+    if (fs.existsSync(DATA_FILE)) {
+      data = JSON.parse(fs.readFileSync(DATA_FILE));
+    }
 
     const newUser = {
       ...req.body,
@@ -93,10 +101,13 @@ app.post("/submit", upload.single("photo"), (req, res) => {
 
     fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
 
-    res.send({ success: true });
+    console.log("SAQLANDI ✅");
+
+    res.json({ success: true });
+
   } catch (err) {
-    console.error(err);
-    res.status(500).send("Xatolik");
+    console.error("XATO:", err);
+    res.status(500).send("Server error");
   }
 });
 // 📊 ADMIN DATA
