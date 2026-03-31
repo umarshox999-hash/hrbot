@@ -6,8 +6,7 @@
 
 <title>Anketa</title>
 
-<!-- Fontlar -->
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&family=Pacifico&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
 
 <style>
 body {
@@ -18,78 +17,61 @@ body {
   display:flex;
   justify-content:center;
   align-items:center;
-  height:100vh;
+  min-height:100vh;
 }
 
-/* Container */
 .container {
-  text-align:center;
   width:100%;
-  max-width:420px;
-}
-
-/* Header */
-.header h1 {
-  font-family:'Pacifico', cursive;
-  font-size:28px;
-  margin-bottom:5px;
-}
-
-.header small {
-  color:#8b949e;
-  font-size:12px;
-}
-
-/* Sticker */
-.sticker {
-  font-size:40px;
-  margin:10px 0;
-}
-
-/* Card */
-.card {
+  max-width:500px;
   background:#161b22;
-  padding:20px;
-  border-radius:15px;
+  padding:25px;
+  border-radius:16px;
+  box-shadow:0 0 25px rgba(0,0,0,0.5);
 }
 
-/* Question */
-#question {
+h1 {
   text-align:center;
-  font-weight:600;
-  margin-bottom:15px;
+  font-size:26px;
+  margin-bottom:10px;
 }
 
-/* Inputs */
+.sub {
+  text-align:center;
+  font-size:13px;
+  color:#8b949e;
+  margin-bottom:20px;
+}
+
 input, select {
   width:100%;
   padding:10px;
-  margin:10px 0;
-  background:#0d1117;
-  border:1px solid #30363d;
-  color:white;
+  margin-bottom:12px;
   border-radius:8px;
-  text-align:center;
-}
-
-/* Buttons */
-.buttons {
-  display:flex;
-  justify-content:space-between;
+  border:none;
+  background:#0d1117;
+  color:white;
 }
 
 button {
-  width:48%;
-  padding:10px;
+  width:100%;
+  padding:12px;
   background:#238636;
   border:none;
-  color:white;
   border-radius:8px;
+  color:white;
+  font-size:16px;
   cursor:pointer;
 }
 
 button:hover {
   background:#2ea043;
+}
+
+.success {
+  display:none;
+  text-align:center;
+  margin-top:15px;
+  color:#3fb950;
 }
 </style>
 </head>
@@ -98,128 +80,64 @@ button:hover {
 
 <div class="container">
 
-  <!-- HEADER -->
-  <div class="header">
-    <h1>Anketa to‘ldiring</h1>
-    <div class="sticker">📋✨</div>
-    <small>Iltimos oxirigacha to‘ldiring</small>
-  </div>
+<h1>📝 Anketa to‘ldiring</h1>
+<div class="sub">Iltimos oxirigacha to‘ldiring</div>
 
-  <!-- CARD -->
-  <div class="card">
+<form action="/submit" method="POST" enctype="multipart/form-data">
 
-    <div id="question"></div>
+<input type="text" name="Ismingiz?" placeholder="Ismingiz" required>
+<input type="text" name="Telefon raqamingiz?" placeholder="Telefon" required>
+<input type="text" name="Telegram username?" placeholder="Telegram username">
 
-    <input type="text" id="input">
-    <select id="select" style="display:none;"></select>
-    <input type="file" id="photo" style="display:none;">
+<input type="text" name="Qaysi ishda ishlamoqchisiz?" placeholder="Qaysi ishda ishlamoqchisiz?" required>
 
-    <div class="buttons">
-      <button onclick="prev()">Ortga</button>
-      <button onclick="next()">Keyingi</button>
-    </div>
+<input type="text" name="Yashash manzilingiz?" placeholder="Yashash manzili" required>
 
-  </div>
+<input type="number" name="Kutilayotgan oylik maosh?" placeholder="Kutilayotgan oylik maosh">
+
+<select name="Oilaviy holatingiz?">
+  <option value="">Oilaviy holat</option>
+  <option value="Bo‘ydoq">Bo‘ydoq</option>
+  <option value="Uylangan">Uylangan</option>
+</select>
+
+<select name="Sudlanganmisiz?">
+  <option value="">Sudlanganmisiz?</option>
+  <option value="Ha">Ha</option>
+  <option value="Yo‘q">Yo‘q</option>
+</select>
+
+<input type="file" name="photo" accept="image/*">
+
+<button type="submit">Yuborish</button>
+
+</form>
+
+<div class="success" id="successMsg">
+  ✅ Ma'lumot yuborildi!
+</div>
 
 </div>
 
 <script>
-const questions = [
-  {q:"Ismingiz?"},
-  {q:"Telefon raqamingiz?"},
-  {q:"Telegram username?"},
-  {q:"Qaysi ishda ishlamoqchisiz?"},
-  {q:"Yashash manzilingiz?"},
-  {q:"Kutilayotgan oylik maosh?"},
-  {q:"Oilaviy holatingiz?", type:"select", options:["Bo‘ydoq","Uylangan/Turmush qurgan"]},
-  {q:"Sudlanganmisiz?", type:"select", options:["Ha","Yo‘q"]},
-  {q:"Rasmingizni yuklang", type:"file"}
-];
+const form = document.querySelector("form");
+const success = document.getElementById("successMsg");
 
-let i = 0;
-let answers = {};
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-function show(){
-  let q = questions[i];
-  document.getElementById("question").innerText = q.q;
+  const formData = new FormData(form);
 
-  document.getElementById("input").style.display="none";
-  document.getElementById("select").style.display="none";
-  document.getElementById("photo").style.display="none";
+  const res = await fetch("/submit", {
+    method: "POST",
+    body: formData
+  });
 
-  if(!q.type){
-    let input = document.getElementById("input");
-    input.style.display="block";
-    input.value = answers[q.q] || "";
+  if(res.ok){
+    form.reset();
+    success.style.display = "block";
   }
-
-  if(q.type==="select"){
-    let select = document.getElementById("select");
-    select.style.display="block";
-    select.innerHTML="";
-
-    q.options.forEach(o=>{
-      let opt=document.createElement("option");
-      opt.value=o;
-      opt.innerText=o;
-      select.appendChild(opt);
-    });
-
-    select.value = answers[q.q] || "";
-  }
-
-  if(q.type==="file"){
-    document.getElementById("photo").style.display="block";
-  }
-}
-
-function next(){
-  save();
-
-  if(i < questions.length-1){
-    i++;
-    show();
-  } else {
-    sendData();
-  }
-}
-
-function prev(){
-  if(i>0){
-    i--;
-    show();
-  }
-}
-
-function save(){
-  let q = questions[i];
-
-  if(q.type==="file"){
-    answers.photo = document.getElementById("photo").files[0];
-  } 
-  else if(q.type==="select"){
-    answers[q.q] = document.getElementById("select").value;
-  }
-  else {
-    answers[q.q] = document.getElementById("input").value;
-  }
-}
-
-function sendData(){
-  const formData = new FormData();
-
-  for(let key in answers){
-    formData.append(key, answers[key]);
-  }
-
-  fetch("/submit", {
-    method:"POST",
-    body:formData
-  })
-  .then(()=>alert("Yuborildi ✅"));
-}
-
-show();
+});
 </script>
 
 </body>
