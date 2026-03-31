@@ -51,19 +51,31 @@ if (!fs.existsSync(DATA_FILE)) {
 
 // 🤖 TELEGRAM START
 bot.onText(/\/start/, (msg) => {
-  bot.sendMessage(msg.chat.id, "Anketani to‘ldiring 👇", {
+
+  // eski keyboardni o‘chirish
+  bot.sendMessage(msg.chat.id, "🔄 Yangilanmoqda...", {
     reply_markup: {
-      keyboard: [
-        [
-          {
-            text: "📝 Anketa to‘ldirish",
-            web_app: { url: WEB_URL }
-          }
-        ]
-      ],
-      resize_keyboard: true
+      remove_keyboard: true
     }
   });
+
+  // yangi keyboard
+  setTimeout(() => {
+    bot.sendMessage(msg.chat.id, "Anketani to‘ldiring 👇", {
+      reply_markup: {
+        keyboard: [
+          [
+            {
+              text: "📝 Anketa to‘ldirish",
+              web_app: { url: WEB_URL }
+            }
+          ]
+        ],
+        resize_keyboard: true
+      }
+    });
+  }, 500);
+
 });
 
 // 📥 FORM QABUL QILISH
